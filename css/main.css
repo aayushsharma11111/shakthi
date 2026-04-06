@@ -1,0 +1,147 @@
+/* 🌑 Base Theme */
+body {
+  margin: 0;
+  background: #1a1a2e;
+  color: #f0f0f0;
+  font-family: sans-serif;
+}
+
+/* 🧱 Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #16213e;
+}
+
+/* 🧱 Layout */
+.container {
+  display: flex;
+  height: calc(100vh - 120px);
+}
+
+/* 🗺️ Map Area */
+#map {
+  flex: 3;
+  background: #0f3460;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+/* 📊 Side Panel */
+.side-panel {
+  flex: 1;
+  background: #16213e;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 🔻 Footer */
+.footer {
+  text-align: center;
+  padding: 10px;
+  background: #16213e;
+}
+
+/* 🚨 Risk Badge */
+.risk-badge {
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.risk-badge.high {
+  background: #e94560;
+  animation: pulse 1s infinite;
+}
+
+.risk-badge.medium {
+  background: #f39c12;
+}
+
+.risk-badge.low {
+  background: #27ae60;
+}
+
+/* 🔁 Pulse Animation */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* 🆘 SOS Button */
+.sos-btn {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: none;
+  background: #e94560;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: center;
+  animation: sosPulse 1.5s infinite;
+}
+
+/* 🔴 SOS Glow Animation */
+@keyframes sosPulse {
+  0% { box-shadow: 0 0 0 0 rgba(233,69,96,0.7); }
+  70% { box-shadow: 0 0 0 20px rgba(233,69,96,0); }
+  100% { box-shadow: 0 0 0 0 rgba(233,69,96,0); }
+}
+
+/* 📍 Panels */
+.services,
+.countdown {
+  background: #0f3460;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+/* 📋 List Styling */
+.services ul {
+  list-style: none;
+  padding: 0;
+}
+
+.services li {
+  margin: 8px 0;
+}
+
+/* ⚠️ Alert Popup */
+.alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #e94560;
+  padding: 15px 20px;
+  border-radius: 8px;
+  animation: slideIn 0.4s ease;
+}
+
+/* ➡️ Slide Animation */
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  #map {
+    height: 50vh;
+  }
+
+  .side-panel {
+    height: auto;
+  }
+}
