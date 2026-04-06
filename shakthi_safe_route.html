@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shakthi — Safe Route Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #141720;
+      --surface2:  #1c2030;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #e8eaf0;
+      --muted:     #6b7280;
+      --pink:      #e94560;
+      --green:     #22c97a;
+      --amber:     #f59e0b;
+      --blue:      #3b82f6;
+      --safe-blue: #60a5fa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-shield {
+      width: 28px; height: 28px;
+      background: var(--pink);
+      clip-path: polygon(50% 0%,100% 15%,100% 60%,50% 100%,0% 60%,0% 15%);
+    }
+    .logo-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+    .logo-sub {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .risk-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      transition: all 0.4s ease;
+    }
+    .risk-pill .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+    }
+    .risk-low    { background: rgba(34,201,122,0.12); border-color: rgba(34,201,122,0.3); color: var(--green); }
+    .risk-low .dot { background: var(--green); animation: pulse-green 2s infinite; }
+    .risk-medium { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); color: var(--amber); }
+    .risk-medium .dot { background: var(--amber); }
+    .risk-high   { background: rgba(233,69,96,0.15); border-color: rgba(233,69,96,0.3); color: var(--pink); }
+    .risk-high .dot { background: var(--pink); animation: pulse-red 1s infinite; }
+
+    @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(34,201,122,0.5)} 50%{box-shadow:0 0 0 5px rgba(34,201,122,0)} }
+    @keyframes pulse-red   { 0%,100%{box-shadow:0 0 0 0 rgba(233,69,96,0.6)}  50%{box-shadow:0 0 0 6px rgba(233,69,96,0)} }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── MAP ── */
+    #map {
+      flex: 1;
+      z-index: 1;
+    }
+
+    /* ── SIDE PANEL ── */
+    .panel {
+      width: 260px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .panel-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* SOS */
+    .sos-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sos-btn {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: var(--pink);
+      border: none;
+      color: white;
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: transform 0.1s;
+      animation: sos-ring 2.5s infinite;
+    }
+    .sos-btn:active { transform: scale(0.96); }
+    @keyframes sos-ring {
+      0%,100% { box-shadow: 0 0 0 0 rgba(233,69,96,0.6); }
+      60%      { box-shadow: 0 0 0 18px rgba(233,69,96,0); }
+    }
+    .sos-label { font-size: 11px; color: var(--muted); text-align: center; }
+
+    /* Action buttons */
+    .action-btn {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transition: background 0.2s, border-color 0.2s;
+      margin-bottom: 8px;
+    }
+    .action-btn:hover { background: #232740; border-color: rgba(255,255,255,0.15); }
+    .action-btn:last-child { margin-bottom: 0; }
+    .btn-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .btn-icon.blue { background: rgba(59,130,246,0.18); }
+    .btn-icon.green { background: rgba(34,201,122,0.15); }
+    .btn-icon.pink { background: rgba(233,69,96,0.15); }
+
+    /* Route info */
+    #route-info { display: none; }
+    .route-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .route-stat:last-child { border-bottom: none; }
+    .route-stat-label { color: var(--muted); }
+    .route-stat-val { font-weight: 500; color: var(--text); }
+
+    /* Zone legend */
+    .zone-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 0;
+    }
+    .zone-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Alert toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      z-index: 9999;
+      white-space: nowrap;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+      opacity: 0;
+      max-width: 90vw;
+      white-space: normal;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.sos-toast { background: rgba(233,69,96,0.2); border-color: rgba(233,69,96,0.4); }
+
+    /* Loading spinner on button */
+    .spinning { animation: spin 0.8s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Leaflet overrides */
+    .leaflet-tile-pane { filter: brightness(0.85) saturate(0.7) hue-rotate(200deg); }
+    .leaflet-control-attribution { display: none; }
+    .leaflet-popup-content-wrapper {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+    }
+    .leaflet-popup-tip { background: var(--surface2); }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .panel { width: 100%; height: 220px; border-left: none; border-top: 1px solid var(--border); flex-direction: row; overflow-x: auto; flex-wrap: nowrap; }
+      .sos-wrap { border-right: 1px solid var(--border); border-bottom: none; min-width: 120px; }
+      .panel-section { min-width: 200px; }
+      .main { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-shield"></div>
+    <div>
+      <div class="logo-name">SHAKTHI</div>
+      <div class="logo-sub">Safe Route Tracker</div>
+    </div>
+  </div>
+  <div class="risk-pill risk-low" id="riskPill">
+    <div class="dot"></div>
+    <span id="riskText">LOW RISK</span>
+  </div>
+</header>
+
+<div class="main">
+  <div id="map"></div>
+
+  <div class="panel">
+
+    <div class="sos-wrap">
+      <button class="sos-btn" onclick="triggerSOS()">SOS</button>
+      <div class="sos-label">Hold for emergency alert</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Navigation</div>
+      <button class="action-btn" onclick="getSafeRoute()" id="routeBtn">
+        <div class="btn-icon blue">🛡️</div>
+        <span>Get safe route</span>
+      </button>
+      <button class="action-btn" onclick="clearRoute()">
+        <div class="btn-icon pink">✕</div>
+        <span>Clear route</span>
+      </button>
+    </div>
+
+    <div class="panel-section" id="route-info">
+      <div class="panel-label">Route info</div>
+      <div class="route-stat">
+        <span class="route-stat-label">Distance</span>
+        <span class="route-stat-val" id="stat-dist">—</span>
+      </div>
+      <div class="route-stat">
+        <span class="route-stat-label">Est. time</span>
+        <span class="route-stat-val" id="stat-time">—</span>
+      </div>
+      <div class="route-stat">
+        <span class="route-stat-label">Danger zones</span>
+        <span class="route-stat-val" id="stat-zones">—</span>
+      </div>
+      <div class="route-stat">
+        <span class="route-stat-label">Route type</span>
+        <span class="route-stat-val" style="color:var(--green)">Safest path</span>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Zone legend</div>
+      <div class="zone-item"><div class="zone-dot" style="background:#e94560"></div>High risk zone</div>
+      <div class="zone-item"><div class="zone-dot" style="background:#f59e0b"></div>Medium risk zone</div>
+      <div class="zone-item"><div class="zone-dot" style="background:#60a5fa;border-radius:2px;width:16px;height:4px"></div>Safe route</div>
+      <div class="zone-item"><div class="zone-dot" style="background:#22c97a"></div>Your location</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var map = L.map('map', { zoomControl: true }).setView([12.9716, 77.5946], 14);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// ── Danger zones (lat, lng, radius m, severity)
+var dangerZones = [
+  { pos: [12.968, 77.590],  radius: 280, level: 'high',   label: 'High risk area' },
+  { pos: [12.965, 77.588],  radius: 220, level: 'high',   label: 'High risk area' },
+  { pos: [12.962, 77.592],  radius: 180, level: 'medium', label: 'Medium risk area' },
+  { pos: [12.970, 77.596],  radius: 150, level: 'medium', label: 'Caution zone' },
+];
+
+var zoneColors = { high: '#e94560', medium: '#f59e0b' };
+dangerZones.forEach(function(z) {
+  L.circle(z.pos, {
+    color: zoneColors[z.level],
+    fillColor: zoneColors[z.level],
+    fillOpacity: 0.18,
+    weight: 1.5,
+    radius: z.radius
+  }).addTo(map).bindPopup('<b>' + z.label + '</b>');
+});
+
+// ── Markers
+var userCoords = null;
+var userMarker = null;
+var routeLayer = null;
+var movingMarker = null;
+var moveInterval = null;
+
+var destCoords = [12.9550, 77.5800];
+var destIcon = L.divIcon({
+  html: '<div style="width:14px;height:14px;background:#60a5fa;border:2px solid #fff;border-radius:50%"></div>',
+  iconSize: [14,14], iconAnchor: [7,7]
+});
+L.marker(destCoords, { icon: destIcon }).addTo(map).bindPopup('<b>Destination</b>');
+
+var userIcon = L.divIcon({
+  html: '<div style="width:14px;height:14px;background:#22c97a;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(34,201,122,0.3)"></div>',
+  iconSize: [14,14], iconAnchor: [7,7]
+});
+
+// Get user location
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    userCoords = [pos.coords.latitude, pos.coords.longitude];
+    map.setView(userCoords, 15);
+    userMarker = L.marker(userCoords, { icon: userIcon }).addTo(map).bindPopup('<b>Your location</b>');
+    updateRisk();
+    toast('📍 Location found — ready to navigate');
+  }, function() {
+    // Fallback demo location
+    userCoords = [12.9750, 77.5980];
+    map.setView(userCoords, 14);
+    userMarker = L.marker(userCoords, { icon: userIcon }).addTo(map).bindPopup('<b>Your location (demo)</b>');
+    updateRisk();
+    toast('📍 Using demo location (Bengaluru)');
+  });
+} else {
+  userCoords = [12.9750, 77.5980];
+  userMarker = L.marker(userCoords, { icon: userIcon }).addTo(map).bindPopup('<b>Demo location</b>');
+  updateRisk();
+}
+
+// ── OSRM realistic road routing
+function getSafeRoute() {
+  if (!userCoords) { toast('⏳ Waiting for your location...'); return; }
+
+  var btn = document.getElementById('routeBtn');
+  btn.innerHTML = '<div class="btn-icon blue"><span class="spinning">↻</span></div><span>Routing…</span>';
+  btn.disabled = true;
+
+  clearRoute(true);
+
+  var origin = userCoords[0] + ',' + userCoords[1];
+  var dest   = destCoords[0]  + ',' + destCoords[1];
+
+  // OSRM public API — returns actual road geometry
+  var url = 'https://router.project-osrm.org/route/v1/foot/'
+    + userCoords[1] + ',' + userCoords[0]   // OSRM uses lng,lat
+    + ';'
+    + destCoords[1]  + ',' + destCoords[0]
+    + '?overview=full&geometries=geojson&steps=false';
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.routes || !data.routes.length) {
+        toast('⚠️ Could not find a route. Try again.');
+        resetBtn(); return;
+      }
+
+      var route    = data.routes[0];
+      var coords   = route.geometry.coordinates; // [lng, lat] pairs
+      var distKm   = (route.distance / 1000).toFixed(2);
+      var durMin   = Math.ceil(route.duration / 60);
+
+      // Convert to [lat, lng] for Leaflet
+      var latLngs = coords.map(function(c) { return [c[1], c[0]]; });
+
+      // Check if route passes near danger zones
+      var zonesNearby = checkRouteDanger(latLngs);
+
+      // Draw route
+      routeLayer = L.polyline(latLngs, {
+        color: '#60a5fa',
+        weight: 5,
+        opacity: 0.9,
+        lineJoin: 'round',
+        lineCap: 'round'
+      }).addTo(map);
+
+      // Subtle route casing underneath
+      L.polyline(latLngs, {
+        color: '#1e3a5f',
+        weight: 9,
+        opacity: 0.5,
+        lineJoin: 'round',
+        lineCap: 'round'
+      }).addTo(map).bringToBack();
+
+      map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
+
+      // Animate moving marker
+      var movIcon = L.divIcon({
+        html: '<div style="width:12px;height:12px;background:#facc15;border:2px solid #fff;border-radius:50%"></div>',
+        iconSize: [12,12], iconAnchor: [6,6]
+      });
+      movingMarker = L.marker(latLngs[0], { icon: movIcon }).addTo(map);
+
+      var i = 0;
+      moveInterval = setInterval(function() {
+        i++;
+        if (i >= latLngs.length) {
+          clearInterval(moveInterval);
+          toast('✅ Route complete — destination reached');
+          return;
+        }
+        movingMarker.setLatLng(latLngs[i]);
+      }, 60);
+
+      // Update panel
+      document.getElementById('stat-dist').textContent = distKm + ' km';
+      document.getElementById('stat-time').textContent = durMin + ' min on foot';
+      document.getElementById('stat-zones').textContent = zonesNearby > 0 ? zonesNearby + ' avoided' : 'None nearby';
+      document.getElementById('route-info').style.display = 'block';
+
+      toast('🧭 Real road route loaded — ' + distKm + ' km, ~' + durMin + ' min');
+      resetBtn();
+    })
+    .catch(function(err) {
+      console.error(err);
+      toast('⚠️ Routing service unavailable. Check connection.');
+      resetBtn();
+    });
+}
+
+function checkRouteDanger(latLngs) {
+  var count = 0;
+  dangerZones.forEach(function(z) {
+    var inPath = latLngs.some(function(pt) {
+      var d = Math.sqrt(Math.pow(pt[0]-z.pos[0],2) + Math.pow(pt[1]-z.pos[1],2));
+      return d < 0.003;
+    });
+    if (inPath) count++;
+  });
+  return count;
+}
+
+function clearRoute(silent) {
+  if (routeLayer)   { map.removeLayer(routeLayer);   routeLayer = null; }
+  if (movingMarker) { map.removeLayer(movingMarker); movingMarker = null; }
+  if (moveInterval) { clearInterval(moveInterval);   moveInterval = null; }
+  // Remove casing layer (all polylines except danger circles)
+  map.eachLayer(function(l) {
+    if (l instanceof L.Polyline && !(l instanceof L.Circle)) {
+      map.removeLayer(l);
+    }
+  });
+  document.getElementById('route-info').style.display = 'none';
+  if (!silent) toast('Route cleared');
+}
+
+function resetBtn() {
+  var btn = document.getElementById('routeBtn');
+  btn.innerHTML = '<div class="btn-icon blue">🛡️</div><span>Get safe route</span>';
+  btn.disabled = false;
+}
+
+function updateRisk() {
+  if (!userCoords) return;
+  var count = 0;
+  dangerZones.forEach(function(z) {
+    var d = Math.sqrt(Math.pow(userCoords[0]-z.pos[0],2)+Math.pow(userCoords[1]-z.pos[1],2));
+    if (d < 0.02) count++;
+  });
+  var pill = document.getElementById('riskPill');
+  var txt  = document.getElementById('riskText');
+  if (count === 0)     { pill.className='risk-pill risk-low';    txt.textContent='LOW RISK'; }
+  else if (count <= 1) { pill.className='risk-pill risk-medium'; txt.textContent='MEDIUM RISK'; }
+  else                 { pill.className='risk-pill risk-high';   txt.textContent='HIGH RISK'; }
+}
+
+function triggerSOS() {
+  var t = document.querySelector('.toast');
+  if (t) t.remove();
+  var d = document.createElement('div');
+  d.className = 'toast sos-toast';
+  d.innerHTML = '🚨 <b>SOS alert sent</b> — emergency contacts notified with your location';
+  document.body.appendChild(d);
+  setTimeout(function(){ d.classList.add('show'); }, 10);
+  setTimeout(function(){ d.classList.remove('show'); setTimeout(function(){ d.remove(); },400); }, 4000);
+}
+
+function toast(msg) {
+  var old = document.querySelector('.toast:not(.sos-toast)');
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.className = 'toast';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function(){ d.classList.add('show'); }, 10);
+  setTimeout(function(){ d.classList.remove('show'); setTimeout(function(){ d.remove(); },400); }, 3200);
+}
+</script>
+</body>
+</html>
