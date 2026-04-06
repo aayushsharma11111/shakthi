@@ -1,24 +1,33 @@
-// Voice SOS System (Auto-start on any click)
+console.log("✅ alertsystem.js loaded");
 
+// Check browser support
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (!SpeechRecognition) {
-    console.log("❌ Speech Recognition not supported");
+    console.log("❌ Speech Recognition NOT supported in this browser");
+    alert("Speech Recognition not supported. Use Google Chrome.");
 } else {
 
     const recognition = new SpeechRecognition();
+
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.lang = "en-US";
 
     let isListening = false;
 
-    // 🎤 Start mic on ANY click (only once)
+    // 👉 Start mic on ANY click
     document.body.addEventListener("click", () => {
+        console.log("🖱️ Click detected");
+
         if (!isListening) {
-            recognition.start();
-            isListening = true;
-            console.log("🎤 Voice system activated");
+            try {
+                recognition.start();
+                isListening = true;
+                console.log("🎤 Voice system ACTIVATED");
+            } catch (e) {
+                console.error("Start error:", e);
+            }
         }
     }, { once: true });
 
@@ -31,30 +40,40 @@ if (!SpeechRecognition) {
             .trim()
             .toLowerCase();
 
-        console.log("Heard:", transcript);
+        console.log("🗣️ Heard:", transcript);
 
         // 🔥 KEYWORD DETECTION
         if (transcript.includes("help") || transcript.includes("emergency")) {
-            console.log("🚨 Keyword detected!");
+            console.log("🚨 KEYWORD DETECTED!");
 
-            // Try to get location if map available
+            // Try getting location
             if (typeof userMarker !== "undefined" && userMarker) {
                 const pos = userMarker.getLatLng();
                 triggerVoiceSOS(pos.lat, pos.lng);
             } else {
+                console.log("⚠️ No map yet, triggering without location");
                 triggerVoiceSOS(null, null);
             }
         }
     };
 
     recognition.onerror = (event) => {
-        console.error("Speech error:", event.error);
+        console.error("❌ Speech error:", event.error);
+
+        if (event.error === "not-allowed") {
+            alert("Please allow microphone access!");
+        }
     };
 
     recognition.onend = () => {
-        // restart listening automatically
+        console.log("🔄 Restarting voice listener...");
+
         if (isListening) {
-            recognition.start();
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error("Restart error:", e);
+            }
         }
     };
 }
@@ -66,13 +85,13 @@ function triggerVoiceSOS(lat, lng) {
     console.log("🚨 VOICE SOS TRIGGERED");
 
     if (lat && lng) {
-        console.log(`Location: ${lat}, ${lng}`);
+        console.log(`📍 Location: ${lat}, ${lng}`);
     }
 
-    // Popup
+    // Popup alert
     alert("🚨 VOICE SOS ACTIVATED!");
 
-    // Update map marker if available
+    // Update marker if exists
     if (typeof userMarker !== "undefined" && userMarker) {
         userMarker.bindPopup("🚨 VOICE SOS ACTIVE!").openPopup();
     }
