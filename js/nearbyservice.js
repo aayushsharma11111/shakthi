@@ -11,14 +11,21 @@ const hospitals = [
 ];
 
 // Function to add markers
-function addNearbyServices(map) {
+function addNearbyServices(map, userLat, userLng) {
+
     police.forEach(p => {
+        const distance = L.latLng(userLat, userLng)
+            .distanceTo([p.lat, p.lng]) / 1000;
+
         L.marker([p.lat, p.lng]).addTo(map)
-        .bindPopup("🚓 " + p.name);
+        .bindPopup(`🚓 ${p.name}<br>Distance: ${distance.toFixed(2)} km`);
     });
 
     hospitals.forEach(h => {
+        const distance = L.latLng(userLat, userLng)
+            .distanceTo([h.lat, h.lng]) / 1000;
+
         L.marker([h.lat, h.lng]).addTo(map)
-        .bindPopup("🏥 " + h.name);
+        .bindPopup(`🏥 ${h.name}<br>Distance: ${distance.toFixed(2)} km`);
     });
 }
