@@ -18,7 +18,7 @@ function addNearbyServices(map, userLat, userLng) {
             .distanceTo([p.lat, p.lng]) / 1000;
 
         L.marker([p.lat, p.lng]).addTo(map)
-        .bindPopup(`🚓 ${p.name}<br>Distance: ${distance.toFixed(2)} km`);
+        .bindPopup(`🚓 ${p.name}<br>Distance: ${distance.toFixed(2)} km<br><b>Get Directions</b>`);
     });
 
     hospitals.forEach(h => {
@@ -26,6 +26,6 @@ function addNearbyServices(map, userLat, userLng) {
             .distanceTo([h.lat, h.lng]) / 1000;
 
         L.marker([h.lat, h.lng]).addTo(map)
-        .bindPopup(`🏥 ${h.name}<br>Distance: ${distance.toFixed(2)} km`);
+        .bindPopup(`🏥 ${h.name}<br>Distance: ${distance.toFixed(2)} km<br><b>Get Directions</b>`);
     });
 }
