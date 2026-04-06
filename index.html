@@ -3,45 +3,515 @@
 
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Women Safety App - Emergency SOS</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeTrack – Risk Monitor</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- External project CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    /* ── Design tokens ──────────────────────────────────── */
+    :root {
+      --bg:          #0b0f18;
+      --surface:     #111827;
+      --border:      #1e2a3a;
+      --text:        #c9d8e8;
+      --muted:       #4a6070;
+      --accent:      #00d4ff;
+
+      --low:         #00e676;
+      --medium:      #ffd740;
+      --high:        #ff1744;
+
+      --font-mono:   'Share Tech Mono', monospace;
+      --font-ui:     'Barlow Condensed', sans-serif;
+
+      --map-h:       65vh;
+      --dash-h:      calc(100vh - var(--map-h));
+    }
+
+    /* ── Reset / Base ───────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      overflow: hidden;
+    }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    #map {
+      width: 100%;
+      height: var(--map-h);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Leaflet tiles look better with a slight tint */
+    .leaflet-tile { filter: brightness(0.8) saturate(0.7); }
+
+    #dashboard {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--dash-h);
+      min-height: 140px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 20px;
+      z-index: 1000;
+    }
+
+    /* ── Warning Banner ─────────────────────────────────── */
+    #warning-banner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      background: var(--high);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-align: center;
+      padding: 8px 16px;
+      animation: flash 1s step-start infinite;
+    }
+
+    #warning-banner.visible { display: block; }
+
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.45; }
+    }
+
+    /* ── Risk Badge ─────────────────────────────────────── */
+    .badge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 90px;
+    }
+
+    .badge-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    #risk-badge {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      padding: 5px 14px;
+      border-radius: 3px;
+      border: 1px solid currentColor;
+      transition: color 0.4s, border-color 0.4s, box-shadow 0.4s;
+    }
+
+    #risk-badge.LOW    { color: var(--low);    box-shadow: 0 0 8px var(--low);    }
+    #risk-badge.MEDIUM { color: var(--medium); box-shadow: 0 0 8px var(--medium); }
+    #risk-badge.HIGH   { color: var(--high);   box-shadow: 0 0 12px var(--high);  }
+
+    /* ── Score Meter ─────────────────────────────────────── */
+    .score-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .score-title {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    #score-value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      transition: color 0.4s;
+    }
+
+    .track {
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    #score-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      background: var(--low);
+      transition: width 0.6s ease, background 0.4s;
+    }
+
+    /* ── GPS Status ──────────────────────────────────────── */
+    .gps-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 80px;
+    }
+
+    .gps-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    #gps-status {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #gps-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.4s;
+    }
+
+    #gps-dot.active {
+      background: var(--low);
+      box-shadow: 0 0 6px var(--low);
+      animation: pulse 1.4s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1);   }
+      50%       { opacity: 0.6; transform: scale(1.5); }
+    }
+
+    /* ── SOS Button ──────────────────────────────────────── */
+    #sos-btn {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      font-weight: 700;
+      padding: 14px 22px;
+      border: 2px solid var(--high);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--high);
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    #sos-btn:hover, #sos-btn.triggered {
+      background: var(--high);
+      color: #fff;
+      box-shadow: 0 0 20px var(--high);
+    }
+
+    #sos-btn:active { transform: scale(0.96); }
+
+    /* ── Auto-SOS countdown chip ─────────────────────────── */
+    #auto-sos-chip {
+      display: none;
+      position: fixed;
+      bottom: calc(var(--dash-h) + 10px);
+      right: 16px;
+      background: #1a0a0a;
+      border: 1px solid var(--high);
+      color: var(--high);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      padding: 5px 12px;
+      border-radius: 3px;
+      z-index: 1500;
+    }
+
+    #auto-sos-chip.visible { display: block; }
+  </style>
 </head>
 
 <body>
 
-    <div class="controls">
-        <button id="sound-toggle" class="sound-toggle" title="Mute Sound">🔔</button>
+  <!-- ── WARNING BANNER (HIGH risk only) ──────────────── -->
+  <div id="warning-banner">⚠ HIGH RISK DETECTED — REMAIN ALERT</div>
+
+  <!-- ── MAP ──────────────────────────────────────────── -->
+  <div id="map"></div>
+
+  <!-- ── AUTO-SOS COUNTDOWN CHIP ──────────────────────── -->
+  <div id="auto-sos-chip">AUTO SOS IN <span id="countdown">10</span>s</div>
+
+  <!-- ── DASHBOARD ────────────────────────────────────── -->
+  <div id="dashboard">
+
+    <!-- Risk badge -->
+    <div class="badge-wrap">
+      <span class="badge-label">Risk</span>
+      <div id="risk-badge" class="LOW">LOW</div>
     </div>
 
-    <div class="container">
-        <h1>Safety System</h1>
-
-        <div id="status-message" class="status-message">
-            Tap to send emergency alert
-        </div>
-
-        <div class="sos-wrapper">
-            <div class="pulse-ring"></div>
-            <button id="sos-btn" class="sos-btn">SOS</button>
-            <svg class="progress-ring" width="200" height="200">
-                <circle class="progress-ring__circle" stroke="#ffaa00" stroke-width="8" fill="transparent" r="90"
-                    cx="100" cy="100" stroke-linecap="round" />
-            </svg>
-        </div>
-
-        <button id="cancel-btn" class="cancel-btn">Cancel Alert</button>
+    <!-- Score meter -->
+    <div class="score-wrap">
+      <div class="score-row">
+        <span class="score-title">Risk Score</span>
+        <span id="score-value">0</span>
+      </div>
+      <div class="track"><div id="score-bar"></div></div>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/nearbyservice.js"></script>
-    <script src="js/sos.js"></script>
-    <script src="js/alertsystem.js"></script>
+    <!-- GPS indicator -->
+    <div class="gps-wrap">
+      <span class="gps-label">GPS</span>
+      <div id="gps-status">
+        <div id="gps-dot"></div>
+        <span id="gps-text">--</span>
+      </div>
+    </div>
+
+    <!-- SOS button -->
+    <button id="sos-btn" onclick="triggerSOS()">SOS</button>
+
+  </div>
+
+  <!-- ── Leaflet JS ────────────────────────────────────── -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- ── External modular scripts ─────────────────────── -->
+  <!--
+    ./js/map.js          → initialises the Leaflet map, exposes window.lMap (normal script)
+    ./js/riskEngine.js   → ES module, exports { calcRisk } or legacy { getRiskLevel }
+    ./js/sos.js          → ES module, exports { dispatchSOS }
+    ./js/alertSystem.js  → ES module, exports { fireAlert }
+  -->
+  <script src="./js/map.js"></script>
+
+  <!-- ── Inline app logic (ES module) ──────────────────── -->
+  <script type="module">
+    // Lazy-import external modules; fall back gracefully if files are absent.
+    let calcRisk    = (score) => ({ level: score < 40 ? 'LOW' : score < 75 ? 'MEDIUM' : 'HIGH' });
+    let dispatchSOS = null;
+    let fireAlert   = null;
+
+    try {
+      const re = await import('./js/riskEngine.js');
+      // Support both export names: calcRisk (new) and getRiskLevel (legacy)
+      calcRisk = re.calcRisk ?? re.getRiskLevel ?? calcRisk;
+    } catch (_) {}
+    try { ({ dispatchSOS } = await import('./js/sos.js'));          } catch (_) {}
+    try { ({ fireAlert }   = await import('./js/alertSystem.js'));  } catch (_) {}
+
+    // ── DOM refs ─────────────────────────────────────────
+    const badge       = document.getElementById('risk-badge');
+    const scoreVal    = document.getElementById('score-value');
+    const scoreBar    = document.getElementById('score-bar');
+    const gpsDot      = document.getElementById('gps-dot');
+    const gpsText     = document.getElementById('gps-text');
+    const banner      = document.getElementById('warning-banner');
+    const sosBtn      = document.getElementById('sos-btn');
+    const chip        = document.getElementById('auto-sos-chip');
+    const countdown   = document.getElementById('countdown');
+
+    // ── State ─────────────────────────────────────────────
+    let currentScore    = 0;
+    let currentLevel    = 'LOW';
+    let highRiskTimer   = null;
+    let countdownSecs   = 10;
+    let sosTriggered    = false;
+    let userMarker      = null;
+
+    // ── Map marker helper ─────────────────────────────────
+    function updateUserMarker(lat, lng) {
+      if (!window.lMap) return;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="
+          width:14px;height:14px;border-radius:50%;
+          background:${currentLevel === 'HIGH' ? '#ff1744' : currentLevel === 'MEDIUM' ? '#ffd740' : '#00e676'};
+          border:2px solid #fff;box-shadow:0 0 8px currentColor;
+        "></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+
+      if (userMarker) {
+        userMarker.setLatLng([lat, lng]).setIcon(icon);
+      } else {
+        userMarker = L.marker([lat, lng], { icon }).addTo(window.lMap);
+        window.lMap.setView([lat, lng], 14);
+      }
+    }
+
+    // ── Risk UI update ────────────────────────────────────
+    function applyRiskUI(score, level) {
+      scoreVal.textContent = score;
+      scoreBar.style.width  = `${Math.min(score, 100)}%`;
+      scoreBar.style.background =
+        level === 'HIGH' ? 'var(--high)' :
+        level === 'MEDIUM' ? 'var(--medium)' : 'var(--low)';
+
+      badge.textContent = level;
+      badge.className   = level;
+
+      banner.classList.toggle('visible', level === 'HIGH');
+    }
+
+    // ── HIGH-risk auto-SOS timer ──────────────────────────
+    function startHighRiskTimer() {
+      if (highRiskTimer) return;
+      countdownSecs = 10;
+      countdown.textContent = countdownSecs;
+      chip.classList.add('visible');
+
+      highRiskTimer = setInterval(() => {
+        countdownSecs--;
+        countdown.textContent = countdownSecs;
+        if (countdownSecs <= 0) {
+          clearInterval(highRiskTimer);
+          highRiskTimer = null;
+          chip.classList.remove('visible');
+          triggerSOS(true); // auto trigger
+        }
+      }, 1000);
+    }
+
+    function clearHighRiskTimer() {
+      if (!highRiskTimer) return;
+      clearInterval(highRiskTimer);
+      highRiskTimer = null;
+      chip.classList.remove('visible');
+    }
+
+    // ── SOS trigger (exposed globally for button onclick) ─
+    window.triggerSOS = function (auto = false) {
+      if (sosTriggered) return;
+      sosTriggered = true;
+      sosBtn.classList.add('triggered');
+      sosBtn.textContent = auto ? 'SOS AUTO' : 'SOS SENT';
+
+      // Vibrate if supported
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 600]);
+
+      const payload = {
+        score: currentScore,
+        level: currentLevel,
+        time: new Date().toISOString(),
+        auto
+      };
+
+      if (typeof dispatchSOS === 'function') dispatchSOS(payload);
+      if (typeof fireAlert   === 'function') fireAlert(payload);
+
+      console.warn('[SafeTrack] SOS dispatched', payload);
+
+      // Reset after 8 s so user can resend if needed
+      setTimeout(() => {
+        sosTriggered = false;
+        sosBtn.classList.remove('triggered');
+        sosBtn.textContent = 'SOS';
+      }, 8000);
+    };
+
+    // ── Main risk update loop ─────────────────────────────
+    function updateRisk(score) {
+      const { level } = calcRisk(score);
+      currentScore = score;
+      currentLevel = level;
+
+      applyRiskUI(score, level);
+
+      if (level === 'HIGH') {
+        startHighRiskTimer();
+      } else {
+        clearHighRiskTimer();
+      }
+    }
+
+    // ── GPS / Geolocation ─────────────────────────────────
+    function initGPS() {
+      if (!navigator.geolocation) {
+        gpsText.textContent = 'N/A';
+        return;
+      }
+
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+          gpsDot.classList.add('active');
+          gpsText.textContent = `±${Math.round(accuracy)}m`;
+          updateUserMarker(lat, lng);
+
+          // Derive a simple speed-based risk contribution if available
+          const speed = pos.coords.speed ?? 0;       // m/s
+          const speedScore = Math.min(speed * 10, 40); // up to 40 pts from speed
+          const base = parseFloat(sessionStorage.getItem('baseRisk') ?? '0');
+          updateRisk(Math.round(Math.min(base + speedScore, 100)));
+        },
+        (err) => {
+          gpsText.textContent = 'ERR';
+          console.warn('[GPS]', err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      );
+    }
+
+    // ── Simulated risk feed (demo when no riskEngine.js) ─
+    //    Replace with real sensor / API data as needed.
+    function startSimulation() {
+      let t = 0;
+      setInterval(() => {
+        t += 0.05;
+        // Oscillate between 0-95 so all three states are demonstrated
+        const sim = Math.round(47.5 + 47.5 * Math.sin(t));
+        sessionStorage.setItem('baseRisk', String(sim));
+        updateRisk(sim);
+      }, 2000);
+    }
+
+    // ── Boot ──────────────────────────────────────────────
+    initGPS();
+    startSimulation();
+  </script>
+
 </body>
 
+</html>
