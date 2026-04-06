@@ -1,0 +1,68 @@
+/* Reset */
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Layout */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+header {
+  height: 60px;
+  background: #141720;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+
+/* Main container */
+.main {
+  flex: 1;
+  display: flex;
+}
+
+/* MAP (IMPORTANT) */
+#map {
+  flex: 1;
+  height: 100%;
+}
+
+/* Side panel */
+.panel {
+  width: 260px;
+  background: #141720;
+  color: white;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* SOS button */
+.sos-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: red;
+  color: white;
+  border: none;
+  font-size: 18px;
+  margin: auto;
+  cursor: pointer;
+}
+
+/* Buttons */
+button {
+  margin-top: 10px;
+  padding: 10px;
+  background: #1c2030;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
