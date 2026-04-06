@@ -3,6 +3,7 @@ html, body {
   margin: 0;
   height: 100%;
   font-family: 'DM Sans', sans-serif;
+  background: #0d0f14;
 }
 
 /* LAYOUT */
@@ -12,20 +13,76 @@ body {
 }
 
 /* HEADER */
-header {
-  height: 60px;
+.app-header {
+  height: 70px;
   background: #141720;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 15px;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  z-index: 1010;
+}
+
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  font-size: 24px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.logo-text span {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+
+.risk-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1c2030;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6edcb0; 
+  box-shadow: 0 0 8px #6edcb0;
+}
+
+#riskText {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 /* MAIN */
 .main {
   flex: 1;
   display: flex;
+  overflow: hidden;
 }
 
 /* MAP */
@@ -36,54 +93,225 @@ header {
 
 /* SIDE PANEL */
 .panel {
-  width: 260px;
-  background: #141720;
+  width: 320px;
+  background: #0d0f14;
   color: white;
-  padding: 15px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
+  box-sizing: border-box;
+  border-left: 1px solid rgba(255,255,255,0.07);
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+/* CARDS */
+.panel-card {
+  background: #141720;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 /* SOS SECTION */
 .sos-wrap {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* SOS BUTTON */
 .sos-btn {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  background: #e94560;
+  background: linear-gradient(135deg, #ff4b4b, #cc0000);
   color: white;
   border: none;
-  font-size: 18px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
   cursor: pointer;
+  box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5);
+  animation: pulseSOS 2s infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sos-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 35px rgba(233, 69, 96, 0.7);
+}
+
+@keyframes pulseSOS {
+  0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.6); }
+  70% { box-shadow: 0 0 0 20px rgba(233, 69, 96, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
 }
 
 /* LABEL */
 .sos-label {
-  margin-top: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #888;
+  font-family: inherit;
+  text-align: center;
+}
+
+/* HEADINGS */
+h3 {
   font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   color: #aaa;
+  margin: 0 0 15px 0;
+}
+
+.nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.nav-header h3 {
+  margin: 0;
+}
+
+.tag-safest {
+  background: rgba(110, 220, 176, 0.15);
+  color: #6edcb0;
+  border: 1px solid rgba(110, 220, 176, 0.3);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 /* BUTTONS */
 button {
-  padding: 10px;
+  width: 100%;
+  padding: 14px 16px;
   background: #1c2030;
   color: white;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.07);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+button:last-child {
+  margin-bottom: 0;
 }
 
 button:hover {
   background: #2a2f45;
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* ROUTE BUTTON HIGHLIGHTS */
+#routeBtnPolice {
+  background: rgba(69, 133, 233, 0.1);
+  border: 1px solid rgba(69, 133, 233, 0.3);
+  color: #8ab4f8;
+}
+
+#routeBtnPolice:hover {
+  background: rgba(69, 133, 233, 0.2);
+  border-color: rgba(69, 133, 233, 0.5);
+  box-shadow: 0 4px 12px rgba(69, 133, 233, 0.2);
+}
+
+#routeBtnHospital {
+  background: rgba(233, 69, 96, 0.1);
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  color: #ff8a9a;
+}
+
+#routeBtnHospital:hover {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: rgba(233, 69, 96, 0.5);
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.2);
+}
+
+/* CANCEL BTN */
+.cancel-btn {
+  background: transparent;
+  color: #888;
+  border: 1px dashed rgba(255,255,255,0.1);
+}
+.cancel-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border: 1px dashed rgba(255,255,255,0.3);
 }
 
 /* ROUTE INFO */
 #route-info {
+  /* No display block here, managed inline via JS block toggle */
+  flex-direction: column;
+  gap: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.route-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.route-stat-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.route-stat-row:first-of-type {
+  padding-top: 5px;
+}
+
+.stat-label {
   font-size: 13px;
+  color: #888;
+}
+
+.stat-value {
+  font-size: 15px;
+  color: #fff;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  background: rgba(255,255,255,0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 768px) {
+  .main {
+    flex-direction: column;
+  }
+  .panel {
+    width: 100%;
+    height: 50vh;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+  }
 }

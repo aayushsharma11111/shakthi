@@ -17,9 +17,18 @@
 
 <body>
 
-<header>
-  <div>SHAKTHI</div>
-  <div id="riskText">LOW RISK</div>
+<header class="app-header">
+  <div class="logo-group">
+    <span class="logo-icon">🛡️</span>
+    <div class="logo-text">
+      <h1>SHAKTHI</h1>
+      <span>Safe Route Tracker</span>
+    </div>
+  </div>
+  <div class="risk-pill">
+    <div class="status-dot"></div>
+    <div id="riskText">LOW RISK</div>
+  </div>
 </header>
 
 <div class="main">
@@ -30,20 +39,35 @@
   <!-- SIDE PANEL -->
   <div class="panel">
 
-    <div class="sos-wrap">
+    <div class="panel-card sos-wrap">
       <button class="sos-btn" onclick="triggerSOS()">SOS</button>
-      <div class="sos-label">Emergency alert</div>
+      <div class="sos-label">Hold for emergency alert</div>
     </div>
 
-    <div class="panel-section">
-      <button onclick="getSafeRoute()">🛡️ Get Safe Route</button>
-      <button onclick="clearRoute()">✕ Clear Route</button>
+    <div class="panel-card nav-card">
+      <div class="nav-header">
+        <h3>Navigation</h3>
+        <span class="tag-safest">Safest Path</span>
+      </div>
+      <button id="routeBtnPolice" onclick="getSafeRoute('police')">🚓 Go to Police</button>
+      <button id="routeBtnHospital" onclick="getSafeRoute('hospital')">🏥 Go to Hospital</button>
+      <button class="cancel-btn" onclick="clearRoute()">✕ Clear Route</button>
     </div>
 
-    <div id="route-info" style="display:none;">
-      <div id="stat-dist"></div>
-      <div id="stat-time"></div>
-      <div id="stat-zones"></div>
+    <div id="route-info" class="panel-card" style="display:none;">
+      <h3>Route Details</h3>
+      <div class="route-stat-row">
+        <span class="stat-label">Distance:</span>
+        <span class="stat-value" id="stat-dist"></span>
+      </div>
+      <div class="route-stat-row">
+        <span class="stat-label">Est. time:</span>
+        <span class="stat-value" id="stat-time"></span>
+      </div>
+      <div class="route-stat-row">
+        <span class="stat-label">Danger zones:</span>
+        <span class="stat-value" id="stat-zones"></span>
+      </div>
     </div>
 
   </div>
