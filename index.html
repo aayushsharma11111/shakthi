@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,6 +12,7 @@
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
     <div class="controls">
@@ -19,23 +21,26 @@
 
     <div class="container">
         <h1>Safety System</h1>
-        
+
         <div id="status-message" class="status-message">
             Tap to send emergency alert
         </div>
-        
+
         <div class="sos-wrapper">
             <div class="pulse-ring"></div>
             <button id="sos-btn" class="sos-btn">SOS</button>
             <svg class="progress-ring" width="200" height="200">
-                <circle class="progress-ring__circle" stroke="#ffaa00" stroke-width="8" fill="transparent" r="90" cx="100" cy="100" stroke-linecap="round"/>
+                <circle class="progress-ring__circle" stroke="#ffaa00" stroke-width="8" fill="transparent" r="90"
+                    cx="100" cy="100" stroke-linecap="round" />
             </svg>
         </div>
-        
+
         <button id="cancel-btn" class="cancel-btn">Cancel Alert</button>
     </div>
 
     <!-- Scripts -->
+    <script src="js/nearbyServices.js"></script>
     <script src="js/sos.js"></script>
 </body>
+
 </html>
