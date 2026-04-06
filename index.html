@@ -1,22 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shakthi - Women Safety System</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Women Safety App - Emergency SOS</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
-    <div id="map" style="height: 100vh; width: 100%;"></div>
+    <div class="controls">
+        <button id="sound-toggle" class="sound-toggle" title="Mute Sound">🔔</button>
+    </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script src="js/map.js"></script>
-    <script src="js/riskEngine.js"></script>
+    <div class="container">
+        <h1>Safety System</h1>
+
+        <div id="status-message" class="status-message">
+            Tap to send emergency alert
+        </div>
+
+        <div class="sos-wrapper">
+            <div class="pulse-ring"></div>
+            <button id="sos-btn" class="sos-btn">SOS</button>
+            <svg class="progress-ring" width="200" height="200">
+                <circle class="progress-ring__circle" stroke="#ffaa00" stroke-width="8" fill="transparent" r="90"
+                    cx="100" cy="100" stroke-linecap="round" />
+            </svg>
+        </div>
+
+        <button id="cancel-btn" class="cancel-btn">Cancel Alert</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/nearbyservice.js"></script>
     <script src="js/sos.js"></script>
-    <script src="js/alertSystem.js"></script>
+    <script src="js/alertsystem.js"></script>
 </body>
-</html>
+

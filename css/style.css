@@ -1,0 +1,238 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0f0f1a 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    transition: background 0.3s ease;
+}
+
+body.alert-active {
+    animation: flashBackground 1s infinite alternate;
+}
+
+@keyframes flashBackground {
+    0% { background: radial-gradient(circle at 50% 50%, #3a0000 0%, #0f0f1a 100%); }
+    100% { background: radial-gradient(circle at 50% 50%, #ff0000 0%, #1a0000 100%); }
+}
+
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+h1 {
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sos-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 65, 108, 0.4);
+    z-index: 1;
+    animation: pulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.pulse-ring.hide {
+    display: none;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7); opacity: 1; }
+    70% { transform: scale(1.5); box-shadow: 0 0 0 20px rgba(255, 65, 108, 0); opacity: 0; }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 65, 108, 0); opacity: 0; }
+}
+
+.sos-btn {
+    position: relative;
+    z-index: 2;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ff416c, #ff1a1a);
+    box-shadow: 
+        10px 10px 20px rgba(0,0,0,0.4), 
+        -10px -10px 20px rgba(255,65,108,0.2),
+        inset 5px 5px 15px rgba(255,255,255,0.3),
+        inset -5px -5px 15px rgba(0,0,0,0.3);
+    border: none;
+    color: white;
+    font-size: 40px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sos-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 
+        12px 12px 25px rgba(0,0,0,0.5), 
+        -12px -12px 25px rgba(255,65,108,0.3),
+        inset 5px 5px 15px rgba(255,255,255,0.3),
+        inset -5px -5px 15px rgba(0,0,0,0.3);
+}
+
+.sos-btn:active {
+    transform: scale(0.95);
+    box-shadow: 
+        5px 5px 10px rgba(0,0,0,0.4), 
+        -5px -5px 10px rgba(255,65,108,0.2),
+        inset 10px 10px 25px rgba(0,0,0,0.4),
+        inset -10px -10px 25px rgba(255,255,255,0.1);
+}
+
+.sos-btn.counting-down {
+    background: #ffaa00;
+    color: #1a1a2e;
+    font-size: 60px;
+    box-shadow: 0 0 30px rgba(255, 170, 0, 0.6);
+}
+
+.sos-btn.alert-sent {
+    background: #ff0000;
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+    pointer-events: none;
+}
+
+.status-message {
+    font-size: 18px;
+    font-weight: 500;
+    height: 30px;
+    margin-bottom: 20px;
+    transition: color 0.3s;
+}
+
+.status-message.warning {
+    color: #ffaa00;
+    font-weight: 600;
+}
+
+.status-message.danger {
+    color: #ff416c;
+    font-weight: 700;
+    animation: textFlash 0.5s infinite alternate;
+}
+
+.status-message.success {
+    color: #4cd137;
+}
+
+@keyframes textFlash {
+    from { opacity: 1; text-shadow: 0 0 10px rgba(255, 65, 108, 0.8); }
+    to { opacity: 0.5; text-shadow: none; }
+}
+
+.cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+
+.cancel-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.sound-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 20px;
+    backdrop-filter: blur(5px);
+    transition: background 0.3s;
+}
+
+.sound-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Circular Progress */
+svg.progress-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+svg.progress-ring.show {
+    opacity: 1;
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 1s linear;
+    transform-origin: 50% 50%;
+}
