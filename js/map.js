@@ -1,14 +1,12 @@
-// Initialize map
+// ---------------- INIT MAP ----------------
 const map = L.map('map').setView([12.9716, 77.5946], 15);
 appState.map = map;
 
-// Tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// User marker
 let userMarker, userCircle;
 
 // ---------------- ZONES ----------------
@@ -31,7 +29,7 @@ dangerZones.forEach(zone => {
     color: 'red',
     fillOpacity: 0.3,
     radius: zone.radius
-  }).addTo(map);
+  }).addTo(map).bindPopup(`<b>Danger</b><br>${zone.label}`);
 });
 
 safeZones.forEach(zone => {
@@ -39,7 +37,7 @@ safeZones.forEach(zone => {
     color: 'green',
     fillOpacity: 0.3,
     radius: zone.radius
-  }).addTo(map);
+  }).addTo(map).bindPopup(`<b>Safe</b><br>${zone.label}`);
 });
 
 // ---------------- ZONE CHECK ----------------
@@ -74,7 +72,9 @@ function onLocationUpdate(position) {
   console.log("Zone:", checkZone(lat, lng));
 
   if (!userMarker) {
-    userMarker = L.marker([lat, lng]).addTo(map);
+    userMarker = L.marker([lat, lng]).addTo(map)
+      .bindPopup("<b>Your Location</b>").openPopup();
+
     userCircle = L.circle([lat, lng], {
       radius: accuracy,
       color: '#3388ff',
@@ -87,21 +87,30 @@ function onLocationUpdate(position) {
 
   map.panTo([lat, lng]);
 
-  updateRisk();
+  updateRisk(); // from riskEngine.js
+}
+
+function onLocationError(error) {
+  console.warn(error.message);
+  alert("Please enable location access.");
 }
 
 // Start tracking
-navigator.geolocation.watchPosition(onLocationUpdate);
+if ("geolocation" in navigator) {
+  navigator.geolocation.watchPosition(onLocationUpdate, onLocationError, {
+    enableHighAccuracy: true
+  });
+}
 
 // ---------------- ROUTING ----------------
 
 function getSafeRoute() {
   const { userCoords, destination } = appState;
-  if (!userCoords) return toast("Waiting for location...");
+  if (!userCoords) return alert("Waiting for location...");
 
   const url = `https://router.project-osrm.org/route/v1/foot/${userCoords[1]},${userCoords[0]};${destination[1]},${destination[0]}?overview=full&geometries=geojson`;
 
-  toast("Routing...");
+  alert("Routing...");
 
   fetch(url)
     .then(r => r.json())
@@ -123,9 +132,9 @@ function getSafeRoute() {
       document.getElementById("route-info").style.display = "block";
       document.getElementById("stat-dist").textContent = "Route ready";
 
-      toast("✅ Safe route loaded");
+      alert("✅ Safe route loaded");
     })
-    .catch(() => toast("⚠️ Routing failed"));
+    .catch(() => alert("⚠️ Routing failed"));
 }
 
 // ---------------- CLEAR ROUTE ----------------
@@ -137,5 +146,5 @@ function clearRoute() {
   }
 
   document.getElementById("route-info").style.display = "none";
-  toast("Route cleared");
+  alert("Route cleared");
 }

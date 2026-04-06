@@ -2,18 +2,28 @@ function triggerSOS() {
   const { userCoords } = appState;
 
   if (!userCoords) {
-    toast("⚠️ Location not available");
+    alert("⚠️ Location not available");
     return;
   }
 
-  // 1. Vibrate
-  navigator.vibrate?.([300, 100, 300]);
+  // 🔊 SOUND (simple + reliable)
+  try {
+    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+    audio.loop = true;
+    audio.play();
 
-  // 2. Play alarm sound
-  const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
-  audio.play().catch(() => {});
+    // Stop after 5 seconds
+    setTimeout(() => {
+      audio.pause();
+    }, 5000);
+  } catch (e) {}
 
-  // 3. Simulate sending alert (you can replace with real API later)
+  // 📳 VIBRATION
+  if (navigator.vibrate) {
+    navigator.vibrate([500, 200, 500, 200, 500]);
+  }
+
+  // 📡 ALERT DATA
   const alertData = {
     type: "SOS",
     location: userCoords,
@@ -22,12 +32,16 @@ function triggerSOS() {
 
   console.log("🚨 SOS SENT:", alertData);
 
-  // 4. Store locally (future use)
+  // 💾 SAVE
   localStorage.setItem("lastSOS", JSON.stringify(alertData));
 
-  // 5. Show UI alert
-  toast("🚨 SOS sent! Emergency contacts notified");
+  // 🧠 OPTIONAL: integrate backend later here
 
-  // 6. OPTIONAL: open phone dialer (works on mobile)
-  window.location.href = "tel:112"; // India emergency number
+  // 📢 USER FEEDBACK
+  alert("🚨 SOS sent! Emergency contacts notified");
+
+  // 📞 CALL EMERGENCY NUMBER (India)
+  setTimeout(() => {
+    window.location.href = "tel:112";
+  }, 1000);
 }
