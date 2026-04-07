@@ -110,10 +110,33 @@ function triggerVoiceSOS(lat, lng) {
         console.log(`📍 Location: ${lat}, ${lng}`);
     }
 
-    // Call dedicated UI update function
+    // 🔥 SEND DATA TO BACKEND
+    fetch("http://localhost:5000/sos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            location: {
+                lat: lat,
+                lng: lng
+            },
+            type: "voice",
+            timestamp: new Date().toISOString()
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("✅ Backend Response:", data);
+    })
+    .catch(err => {
+        console.error("❌ Backend Error:", err);
+    });
+
+    // 🚨 UI ALERT
     displaySOSAlert();
 
-    // Safely update marker if it exists and has bindPopup method
+    // 📍 Update map marker safely
     if (typeof userMarker !== "undefined" && userMarker !== null && typeof userMarker.bindPopup === "function") {
         try {
             userMarker.bindPopup("🚨 VOICE SOS ACTIVE!").openPopup();
